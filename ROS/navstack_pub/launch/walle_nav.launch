@@ -1,0 +1,43 @@
+<!--<?xml version="1.0"?>-->
+
+<launch>
+
+
+
+<!-- Transformation Configuration ... Setting Up the Relationships Between Coordinate Frames -->
+ <node pkg="tf" type="static_transform_publisher" name="base_link_to_laser" args="0.29 0 -0.08 0 3.14159 0 base_link laser 30" />
+ <node pkg="tf" type="static_transform_publisher" name="imu_broadcaster" args="-0.075 0 0 0 0 0 base_link imu 30" />
+ <node pkg="tf" type="static_transform_publisher" name="base_link_broadcaster" args="0 0 .08 0 0 0 base_footprint base_link 30" />
+
+
+ <!-- Lidar Data Publisher Using RPLIDAR from Slamtec -->
+ <!-- Used for obstacle avoidance and can be used for mapping --> 
+ <!-- Publish: /scan -->
+ 
+ <node name="rplidarNode" pkg="rplidar_ros" type="rplidarNode" output="screen">
+	 <param name="serial_port" type="string" value="/dev/ttyUSB0"/>
+	 <param name="serial_baudrate" type="int" value="115200"/><!--A1/A2 -->
+	 <!--param name="serial_baudrate" type="int" value="256000"--><!--A3 -->
+	 <param name="frame_id" type="string" value="laser"/>
+	 <param name="inverted" type="bool" value="false"/>
+	 <param name="angle_compensate" type="bool" value="true"/>
+ </node> 
+
+
+<!-- Wheel encoder and Drive controller -->
+<!-- Publish to /cmd_vel and Subscribe /left_ticks and /right_ticks -->
+<node pkg="rosserial_python" type="serial_node.py" name="serial_node">
+	<param name="port" value="/dev/ttyACM0"/>
+	<param name="baud" value="115200"/>
+</node>
+
+
+<node ns="imu" name="imu_node" pkg="imu_bno055" type="bno055_i2c_node" respawn="true" respawn_delay="2">
+    <param name="device" type="string" value="/dev/i2c-3"/>
+    <param name="address" type="int" value="40"/> <!-- 0x28 == 40 is the default for BNO055 -->
+    <param name="frame_id" type="string" value="imu"/>
+</node>
+
+ 
+</launch>
+
